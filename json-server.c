@@ -13,7 +13,6 @@
 #include <inttypes.h>
 #include <errno.h>
 #include <sys/wait.h>
-#include "smartalloc.h"
 
 #define BUFSIZE 4096
 #define GET_ERROR (1 << 14)
