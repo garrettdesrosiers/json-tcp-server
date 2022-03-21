@@ -145,6 +145,8 @@ void free_list(node_t *head)
    free(current);
 }
 
+/* End linked list functions */
+
 void server_exit()
 {
    free_list(head);
@@ -172,18 +174,11 @@ void ipv4_to_ipv6(char *ipv4, struct sockaddr_in6 *ipv6)
 {
    uint8_t one, two, three, four;
    char ipv6_string[BUFSIZE];
-   //if(strcmp(ipv4, "127.0.0.1") == 0)
-   //   inet_pton(AF_INET6, "::1", ipv6->sin6_addr.s6_addr);
-   //else
-   //{
-      sscanf(ipv4, "%" SCNu8 ".%" SCNu8 ".%" SCNu8 ".%" SCNu8, &one, &two, &three, &four);
-      sprintf(ipv6_string, "::ffff:%02x%02x:%02x%02x", one, two, three, four);
-      //printf("%s\n", ipv6_string);
-      inet_pton(AF_INET6, ipv6_string, ipv6->sin6_addr.s6_addr);
-   //}
+   sscanf(ipv4, "%" SCNu8 ".%" SCNu8 ".%" SCNu8 ".%" SCNu8, &one, &two, &three, &four);
+   sprintf(ipv6_string, "::ffff:%02x%02x:%02x%02x", one, two, three, four);
+   inet_pton(AF_INET6, ipv6_string, ipv6->sin6_addr.s6_addr);
 }
 
-//Checks for valid HTTP GET requests and finds valid
 uint16_t parse_http(uint8_t *bytes)
 {
    uint16_t flags = 0;
@@ -220,7 +215,6 @@ uint16_t parse_http(uint8_t *bytes)
    else
       flags |= VERSION_ERROR;
    loginfo("Request parsed.");
-   // fprintf(stderr, "%d\n", flags);
    return flags;
 }
 
@@ -252,78 +246,6 @@ static long get_memory_usage_linux()
 
    return vsize;
 }
-
-
-//Complete request for properly formatted HTTP GET requests
-// int complete_request(int connection_socket, uint16_t request_flags, int clients_served, int errors, struct timeval* start)
-// {
-//    char* version;
-//    char* data[BUFSIZE];
-//    char* writebuff[BUFSIZE];
-//    memset(data, 0, sizeof(char*)*BUFSIZE);
-//    memset(writebuff, 0, sizeof(char*)*BUFSIZE);
-//
-//    loginfo("Completing request...");
-//
-//    if(request_flags & HTTP_0_9)
-//       version = "HTTP/0.9";
-//    else if(request_flags & HTTP_1_0)
-//       version = "HTTP/1.0";
-//    else if(request_flags & HTTP_1_1)
-//       version = "HTTP/1.1";
-//
-//    if(request_flags & FORTUNE_URL)
-//       strcpy((char*)data, "fortune");
-//    else if(request_flags & STAT_URL)
-//    {
-//       struct timeval now;
-//       struct timeval diff;
-//       struct timeval cpu_time;
-//       struct rusage usage;
-//       static unsigned long memory = 0;
-//       memset(&now, 0, sizeof(now));
-//       memset(&cpu_time, 0, sizeof(cpu_time));
-//       memset(&diff, 0, sizeof(diff));
-//       getrusage(RUSAGE_SELF, &usage);
-//       memory = get_memory_usage_linux();
-//       gettimeofday(&now, NULL);
-//       timersub(&now, start, &diff);
-//       timeradd(&(usage.ru_utime), &(usage.ru_stime), &cpu_time);
-//       //printf("%ld %ld\n", start->tv_sec, start->tv_usec);
-//       //printf("%ld %ld\n", now.tv_sec, now.tv_usec);
-//       double diff_microseconds = diff.tv_sec + (diff.tv_usec / 1000000.0);
-//       double cpu_microseconds = cpu_time.tv_sec + (cpu_time.tv_usec / 1000000.0);
-//       //printf("%lf %lf\n", diff_microseconds, cpu_microseconds);
-//       snprintf((char*)data, BUFSIZE, "{\"num_clients\": %d, "
-//              "\"num_requests\": %d, "
-//              "\"errors\": %d, "
-//              "\"uptime\": %lf, "
-//              "\"cpu_time\": %lf, "
-//              "\"memory_used\": %lu}\n", clients_served, clients_served, errors, diff_microseconds, cpu_microseconds, memory);
-//    }
-//    else if(request_flags & QUIT_URL)
-//    {
-//       //data = "{\"result\": \"success\"}\n";
-//       strcpy((char*)data, "{\"result\": \"success\"}\n");
-//       snprintf((char*)writebuff, sizeof(writebuff), "%s 200 OK\r\nContent-Type: application/json\r\n\r\n%s", version, (char*)data);
-//       write(connection_socket, (char*)writebuff, strlen((char*)writebuff));
-//       server_exit();
-//    }
-//    else if(request_flags & ABOUT_URL)
-//       strcpy((char*)data, "{\"author\": \"Garrett DesRosiers\", "
-//              "\"email\": \"gdesrosi@calpoly.edu\", "
-//              "\"major\": \"CPE\"}\n");
-//    else if(request_flags & IMPL_URL)
-//       strcpy((char*)data, "[{\"feature\": \"about\", \"URL\": \"/json/about.json\"}, "
-//               "{\"feature\": \"quit\", \"URL\": \"/json/quit\"}, "
-//               "{\"feature\": \"status\", \"URL\": \"/json/status.json\"}, "
-//               "{\"feature\": \"fortune\", \"URL\": \"/json/fortune\"}]\n");
-//
-//    snprintf((char*)writebuff, sizeof(writebuff), "%s 200 OK\r\nContent-Type: application/json\r\n\r\n%s", version, (char*)data);
-//    //printf("%s\n", (char*)data);
-//    loginfo("Sending request...");
-//    return write(connection_socket, (char*)writebuff, strlen((char*)writebuff));
-// }
 
 void send_response(int connection_socket)
 {
@@ -438,11 +360,8 @@ int gen_response(int connection_socket, uint16_t request_flags, struct timeval* 
       gettimeofday(&now, NULL);
       timersub(&now, start, &diff);
       timeradd(&(usage.ru_utime), &(usage.ru_stime), &cpu_time);
-      //printf("%ld %ld\n", start->tv_sec, start->tv_usec);
-      //printf("%ld %ld\n", now.tv_sec, now.tv_usec);
       double diff_microseconds = diff.tv_sec + (diff.tv_usec / 1000000.0);
       double cpu_microseconds = cpu_time.tv_sec + (cpu_time.tv_usec / 1000000.0);
-      //printf("%lf %lf\n", diff_microseconds, cpu_microseconds);
       snprintf((char*)data, BUFSIZE, "{\"num_clients\": %d, "
              "\"num_requests\": %d, "
              "\"errors\": %d, "
@@ -452,7 +371,6 @@ int gen_response(int connection_socket, uint16_t request_flags, struct timeval* 
    }
    else if(request_flags & QUIT_URL)
    {
-      //data = "{\"result\": \"success\"}\n";
       strcpy((char*)data, "{\"result\": \"success\"}\n");
       snprintf((char*)(conninfo->response), sizeof(conninfo->response), "%s 200 OK\r\nContent-Type: application/json\r\n\r\n%s", version, (char*)data);
       write(connection_socket, (char*)(conninfo->response), strlen((char*)(conninfo->response)));
@@ -470,7 +388,6 @@ int gen_response(int connection_socket, uint16_t request_flags, struct timeval* 
 
    loginfo("Adding request to connection...");
    snprintf((char*)(conninfo->response), sizeof(conninfo->response), "%s 200 OK\r\nContent-Type: application/json\r\n\r\n%s", version, (char*)data);
-   //printf("%s\n", (char*)data);
    return 0;
 }
 
@@ -499,52 +416,9 @@ int read_request(int connection_socket, struct timeval *start)
       num_requests++;
       loginfo("Request parsed successfully.");
       gen_response(connection_socket, request_flags, start);
-      //set conninfo->response to string
    }
    return 0;
 }
-
-// int process_request(int connection_socket, struct timeval *start)
-// {
-//    //read and handle http request
-//    int numbytes;
-//    static int errors = 0;
-//    static int clients_served = 0;
-//    uint8_t bytes[BUFSIZE+1];
-//    uint16_t request_flags;
-//    int byte_offset = 0;
-//
-//    memset(bytes, 0, BUFSIZE);
-//    //numbytes = read(connection_socket, bytes, BUFSIZE);
-//    while(!done && (numbytes = read(connection_socket, (bytes + byte_offset), (BUFSIZE - get_node(head, i)->reqoffset)) > 0)
-//    {
-//       //printf("%s\n", bytes);
-//       get_node(head, i)->reqoffset += numbytes;
-//       //printf("%d", bytes[byte_offset - 1]);
-//       //fflush(stdout);
-//       if (bytes[byte_offset - 1] == '\n')
-//          get_node(head, i)->state = WRITE_STATE;
-//    }
-//    loginfo("Data read from connection socket.");
-//    if(numbytes < 0)
-//    {
-//       perror("Read Failure");
-//       exit(EXIT_FAILURE);
-//    }
-//    //printf("%d\n", numbytes);
-//    request_flags = parse_http(bytes);
-//    loginfo("Request successfully parsed.");
-//    clients_served++;
-//    //printf("%d\n", request_flags);
-//    if(!(request_flags & HTTP_ERROR))
-//    {
-//       complete_request(connection_socket, request_flags, clients_served, errors, start);
-//       loginfo("Completed request.");
-//    }
-//    else
-//       errors++;
-//    return shutdown(connection_socket, SHUT_WR);
-// }
 
 int main(int argc, char* argv[])
 {
